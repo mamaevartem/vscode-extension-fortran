@@ -1,0 +1,30 @@
+{
+    "name": "fortran",
+    "displayName": "Fortran",
+    "description": "Provides support for the Fortran language.",
+    "version": "0.0.1",
+    "publisher": "unpublish",
+    "engines": {
+        "vscode": "^1.15.0"
+    },
+    "categories": [
+        "Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "fortran-free-form",
+                "aliases": ["Fortran (free form)", "fortran-free-form"],
+                "extensions": [".f90",".F90",".f95",".F95",".cuf",".CUF"],
+                "configuration": "./free-form-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "fortran-free-form",
+                "scopeName": "source.fortran.free-form",
+                "path": "./syntaxes/fortran-free-form.tmLanguage.json"
+            }
+        ]
+    }
+}

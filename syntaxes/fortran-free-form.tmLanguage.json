@@ -152,6 +152,14 @@
 				}
 			]
 		},
+		"dummy-argument": {
+			"patterns": [
+				{
+					"name": "variable.parameter.fortran.free-form",
+					"match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+				}
+			]
+		},
 		"constant": {
 			"patterns": [
 				{
@@ -351,7 +359,11 @@
 						"0": {"name": "punctuation.definition.end.fortran.free-form"}
 					},
 					"patterns": [
-						{"include": "#type-name-and-type-parameter-list"}
+						{"include": "#type-name-and-type-parameter-list"},
+						{
+							"name": "keyword.operator.fortran.free-form",
+							"match": "(\\*)"
+						}
 					]
 				}
 			]
@@ -387,7 +399,7 @@
 								"1": {"name": "storage.modifier.fortran.free-form"},
 								"2": {"name": "punctuation.definition.begin.fortran.free-form"}
 							},
-							"end": "\\]",
+							"end": "(\\])|(?=,)|(?=::)|(?=!)|(?=;)|(?=\\n)",
 							"endCaptures": {
 								"0": {"name": "punctuation.definition.end.fortran.free-form"}
 							},
@@ -404,7 +416,7 @@
 								"1": {"name": "storage.modifier.fortran.free-form"},
 								"2": {"name": "punctuation.definition.begin.fortran.free-form"}
 							},
-							"end": "\\)",
+							"end": "(\\))|(?=,)|(?=::)|(?=!)|(?=;)|(?=\\n)",
 							"endCaptures": {
 								"0": {"name": "punctuation.definition.end.fortran.free-form"}
 							},
@@ -511,7 +523,7 @@
 		"type-declaration-statement": {
 			"name": "meta.type-declaration-statement.fortran.free-form",
 			"begin": "^\\s*(?i:(?=integer|real|complex|character|logical|double|type\\s*\\(|class\\s*\\())",
-			"end": "(?=!)|(;)|(\\n)|(?i:(?=elemental|impure|module|pure|recursive|subroutine|function))",
+			"end": "(?=!)|(;)|(\\n)|(?i:(?=elemental|impure|pure|recursive|subroutine|function))",
 			"endCaptures": {
 				"0": {"name": "punctuation.terminator.statement.fortran.free-form"}
 			},
@@ -528,7 +540,9 @@
 							"begin": "(?<=::)",
 							"end": "(?=!)|(?=;)|(?=\\n)",
 							"patterns": [
-								{"include": "#expression"}
+								{"include": "#expression"},
+								{"include": "#comma"},
+								{"include": "#continuation"}
 							]
 						}
 					]
@@ -538,7 +552,9 @@
 					"begin": "(?=[a-zA-Z_])",
 					"end": "(?=!)|(?=;)|(?=\\n)",
 					"patterns": [
-						{"include": "#expression"}
+						{"include": "#expression"},
+						{"include": "#comma"},
+						{"include": "#continuation"}
 					]
 				}
 			]
@@ -643,8 +659,65 @@
 		"subprogram": {
 			"patterns": [
 				{
+					"match": "\\b(?i:(module))\\s*(?i:(procedure))\\s*([a-zA-Z_][0-9a-zA-Z_]*)?",
+					"captures": {
+						"1": {"name": "storage.type.program-unit.fortran.free-form"},
+						"2": {"name": "storage.type.program-unit.fortran.free-form"},
+						"3": {"name": "entity.name.function.fortran.free-form"}
+					}
+				},
+				{
 					"name": "meta.subprogram-statement.fortran.free-form",
-					"begin": "\\b(?i:(?=elemental|impure|module|pure|recursive|attributes|subroutine|function))\\b",
+					"begin": "\\b(?i:(procedure))\\s*((\\()\\s*([a-zA-Z_][0-9a-zA-Z_]*)\\s*(\\)))?",
+					"beginCaptures": {
+						"1": {"name": "storage.type.program-unit.fortran.free-form"},
+						"3": {"name": "punctuation.definition.begin.fortran.free-form"},
+						"4": {"name": "entity.name.function.fortran.free-form"},
+						"5": {"name": "punctuation.definition.end.fortran.free-form"}
+					},
+					"end": "(?=!)|(;)|(\\n)",
+					"endCaptures": {
+						"0": {"name": "punctuation.terminator.fortran.free-form"}
+					},
+					"patterns": [
+						{
+							"name": "meta.procedure-attribute-specifier-list.fortran.free-form",
+							"begin": "(?=,)|(?=::)",
+							"end": "(::)|(?=!)|(?=;)|(?=\\n)",
+							"endCaptures": {
+								"0": {"name": "punctuation.separator.fortran.free-form"}
+							},
+							"patterns": [
+								{
+									"match": "(,)\\s*(?i:(deferred|nopass|non_overridable|pointer))\\b",
+									"captures": {
+										"1": {"name": "punctuation.separator.fortran.free-form"},
+										"2": {"name": "storage.modifier.program-unit.fortran.free-form"}
+									}
+								},
+								{
+									"match": "(,)\\s*(?i:(pass))\\s*(\\()\\s*(?i:([a-zA-Z_][0-9a-zA-Z_]*))?\\s*(\\))",
+									"captures": {
+										"1": {"name": "punctuation.separator.fortran.free-form"},
+										"2": {"name": "storage.modifier.program-unit.fortran.free-form"},
+										"3": {"name": "punctuation.definition.begin.fortran.free-form"},
+										"4": {"name": "variable.other.fortran.free-form"},
+										"5": {"name": "punctuation.definition.end.fortran.free-form"}
+									}
+								},
+								{"include": "#continuation"}
+							]
+						},
+						{
+							"name": "entity.name.function.fortran.free-form",
+							"match": "([a-zA-Z_][0-9a-zA-Z_]*)"
+						},
+						{"include": "#continuation"}
+					]
+				},
+				{
+					"name": "meta.subprogram-statement.fortran.free-form",
+					"begin": "\\b(?i:(?=elemental|impure|module\\s*procedure|pure|recursive|attributes|subroutine|function))\\b",
 					"end": "(?=;)|(?=!)|(?=\\n)",
 					"endCaptures": {
 						"0": {"name": "punctuation.definition.end.fortran.free-form"}
@@ -652,12 +725,12 @@
 					"patterns": [
 						{
 							"name": "meta.prefix-list.fortran.free-form",
-							"begin": "\\b(?i:(?=elemental|impure|module|pure|recursive|attributes))\\b",
+							"begin": "\\b(?i:(?=elemental|impure|module\\s*procedure|pure|recursive|attributes))\\b",
 							"end": "(\\b(?i:(?=subroutine|function))\\b)|(?=;)|(?=!)|(?=\\n)",
 							"patterns": [
 								{
 									"name": "storage.type.program-unit.fortran.free-form",
-									"match": "\\b(?i:(elemental|impure|module|pure|recursive))\\b"
+									"match": "\\b(?i:(elemental|impure|module\\s*procedure|pure|recursive))\\b"
 								},
 								{
 									"match": "\\b(?i:(attributes))\\s*(\\()\\s*(?i:(global|device))\\s*(\\))",
@@ -693,7 +766,7 @@
 									},
 									"patterns": [
 										{"include": "#comma"},
-										{"include": "#variable"},
+										{"include": "#dummy-argument"},
 										{"include": "#continuation"}
 									]
 								},
@@ -701,7 +774,7 @@
 							]
 						},
 						{
-							"match": "\\b(?i:(result))\\s*(\\()\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(\\))",
+							"match": "\\b(?i:(result))\\s*(\\()\\s*([A-Za-z_][A-Za-z0-9_]*)?\\s*(\\))",
 							"captures": {
 								"1": {"name": "storage.type.program-unit.fortran.free-form"},
 								"2": {"name": "punctuation.definition.begin.fortran.free-form"},

@@ -15,7 +15,7 @@
             {
                 "id": "fortran-free-form",
                 "aliases": ["Fortran (free form)", "fortran-free-form"],
-                "extensions": [".f90",".F90",".f95",".F95",".cuf",".CUF"],
+                "extensions": [".f90",".F90",".f95",".F95",".cuf",".CUF",".fi",".FI"],
                 "configuration": "./free-form-configuration.json"
             }
         ],

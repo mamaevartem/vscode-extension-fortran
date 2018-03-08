@@ -1,6 +1,6 @@
 # VS Code Fortran
 
-This extension for Visual Studio Code provides support for the Fortran language.
+VS Code extension providing support for the Fortran language.
 
 Features:
 * Highlights syntax

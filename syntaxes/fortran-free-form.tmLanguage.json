@@ -12,6 +12,7 @@
 		{"include": "#subprogram"},
 		{"include": "#interface-specification"},
 		{"include": "#module"},
+		{"include": "#submodule"},
 		{"include": "#main-program"},
 		{"include": "#attribute-specification-statement"},
 		{"include": "#executable-statement"},
@@ -20,9 +21,9 @@
 	"repository": {
 		"preprocessor-directive": {
 			"name": "meta.preprocessor.fortran.free-form",
-			"begin": "^\\s*#",
+			"begin": "^\\s*(?i:(#|!$omp))",
 			"beginCaptures": {
-				"0": {"name": "punctuation.definition.fortran.free-form"}
+				"0": {"name": "punctuation.definition.preprocessor.fortran.free-form"}
 			},
 			"end": "\\n",
 			"patterns": [
@@ -100,11 +101,23 @@
 				}
 			]
 		},
+		"dots": {
+			"patterns": [
+				{
+					"name": "punctuation.separator.fortran.free-form",
+					"match": "(\\.\\.)"
+				}
+			]
+		},
 		"operator": {
 			"patterns": [
 				{
 					"name": "keyword.operator.comparsion.fortran.free-form",
 					"match": "(?i:(\\.eq\\.|\\.ne\\.|\\.le\\.|\\.ge\\.|\\.lt\\.|\\.gt\\.))"
+				},
+				{
+					"name": "keyword.operator.user.fortran.free-form",
+					"match": "\\.([a-zA-Z_][0-9a-zA-Z_]*)\\."
 				},
 				{
 					"name": "keyword.operator.comparsion.fortran.free-form",
@@ -133,22 +146,34 @@
 				{
 					"name": "keyword.operator.assignment.fortran.free-form",
 					"match": "="
+				},
+				{
+					"name": "keyword.operator.access.fortran.free-form",
+					"match": "%"
 				}
 			]
 		},
 		"variable": {
 			"patterns": [
 				{
-					"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(%)\\s*(\\b[A-Za-z_][A-Za-z0-9_]*)\\b",
-					"captures": {
-						"1": {"name": "variable.other.fortran.free-form"},
-						"2": {"name": "punctuation.separator.fortran.free-form"},
-						"3": {"name": "variable.other.fortran.free-form"}
-					}
+					"name": "variable.other.fortran.free-form",
+					"match": "\\b[A-Za-z_][A-Za-z0-9_]*(?!\\'|\")"
+				}
+			]
+		},
+		"number": {
+			"patterns": [
+				{
+					"name": "constant.numeric.fortran.free-form",
+					"match": "(?i:(b|o|z))(\\'[0-9]+\\')"
 				},
 				{
-					"name": "variable.other.fortran.free-form",
-					"match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+					"name": "constant.numeric.fortran.free-form",
+					"match": "(?i:(b|o|z))(\"[0-9]+\")"
+				},
+				{
+					"name": "constant.numeric.fortran.free-form",
+					"match": "([0-9]+\\.?[0-9]*|\\.[0-9]+)((e|E|d|D|q|Q)(\\+|-)?[0-9]+)?(_([0-9]+|[a-zA-Z_][0-9a-zA-Z_]*))?\\b"
 				}
 			]
 		},
@@ -165,18 +190,6 @@
 				{
 					"name": "constant.language.fortran.free-form",
 					"match": "(?i:(\\.true\\.|\\.false\\.))(_([0-9]+|([a-zA-Z_][0-9a-zA-Z_]*)))?"
-				}
-			]
-		},
-		"number": {
-			"patterns": [
-				{
-					"name": "constant.numeric.fortran.free-form",
-					"match": "(\\+|-)?([0-9]+\\.?[0-9]*|\\.[0-9]+)((e|E|d|D|q|Q)(\\+|-)?[0-9]+)?(_([0-9]+|[a-zA-Z_][0-9a-zA-Z_]*))?\\b"
-				},
-				{
-					"name": "constant.numeric.fortran.free-form",
-					"match": "\\(\\s*(\\+|-)?([0-9]+\\.?[0-9]*|\\.[0-9]+)((e|E|d|D|q|Q)(\\+|-)?[0-9]+)?(_([0-9]+|[a-zA-Z_][0-9a-zA-Z_]*))?\\s*,\\s*(\\+|-)?([0-9]+\\.?[0-9]*|\\.[0-9]+)((e|E|d|D|q|Q)(\\+|-)?[0-9]+)?(_([0-9]+|[a-zA-Z_][0-9a-zA-Z_]*))?\\s*\\)"
 				}
 			]
 		},
@@ -247,6 +260,18 @@
 				"0": {"name": "punctuation.definition.end.fortran.free-form"}
 			},
 			"patterns": [
+				{
+               "name": "meta.formal-actual-arguments.fortran.free-form",
+               "begin": "([a-zA-Z_][0-9a-zA-Z]*)\\s*(=)",
+               "beginCaptures": {
+						"1": {"name": "variable.parameter.fortran.free-form"},
+						"2": {"name": "keyword.operator.assignment.fortran.free-form"}
+               },
+               "end": "(?=!)|(?=;)|(?=\\n)|(?=,)|(?=\\))",
+               "patterns": [
+				      {"include": "#expression"}
+               ]
+				},
 				{"include": "#expression"},
 				{"include": "#comma"},
 				{"include": "#colon"}
@@ -267,7 +292,34 @@
 				{"include": "#comma"},
 				{"include": "#colon"}
 			]
-		},
+      },
+      "user-defined-operator": {
+			"patterns": [
+				{
+					"match": "(?i:(assignment))\\s*(\\()\\s*(=)\\s*(\\))",
+					"captures": {
+						"1": {"name": "storage.type.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"},
+						"3": {"name": "keyword.operator.assignment.fortran.free-form"},
+						"4": {"name": "punctuation.definition.end.fortran.free-form"}
+					}
+				},
+				{
+					"begin": "(?i:(operator))\\s*(\\()",
+					"beginCaptures": {
+						"1": {"name": "storage.type.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"}
+					},
+					"end": "(\\))",
+					"endCaptures": {
+						"1": {"name": "punctuation.definition.end.fortran.free-form"}
+					},
+               "patterns": [
+                  {"include": "#operator"}
+               ]
+            }
+         ]
+      },
 		"type-name-and-type-parameter-list": {
 			"patterns": [
 				{
@@ -399,7 +451,7 @@
 								"1": {"name": "storage.modifier.fortran.free-form"},
 								"2": {"name": "punctuation.definition.begin.fortran.free-form"}
 							},
-							"end": "(\\])|(?=,)|(?=::)|(?=!)|(?=;)|(?=\\n)",
+							"end": "(\\])|(?=::)|(?=!)|(?=;)|(?=\\n)",
 							"endCaptures": {
 								"0": {"name": "punctuation.definition.end.fortran.free-form"}
 							},
@@ -416,24 +468,34 @@
 								"1": {"name": "storage.modifier.fortran.free-form"},
 								"2": {"name": "punctuation.definition.begin.fortran.free-form"}
 							},
-							"end": "(\\))|(?=,)|(?=::)|(?=!)|(?=;)|(?=\\n)",
+							"end": "(\\))|(?=::)|(?=!)|(?=;)|(?=\\n)",
 							"endCaptures": {
 								"0": {"name": "punctuation.definition.end.fortran.free-form"}
 							},
 							"patterns": [
-								{ "include": "#expression" },
-								{ "include": "#colon" },
+								{ "include": "#expression"},
+								{ "include": "#colon"},
+								{ "include": "#dots"},
 								{ "include": "#comma"}
 							]
 						},
 						{
-							"match": "\\b(?i:(intent))\\s*(\\()\\s*(?i:(in|out|in\\s*out))\\s*(\\))",
-							"captures": {
+							"name": "meta.intent-specifier.fortran.free-form",
+							"begin": "\\b(?i:(intent))\\s*(\\()",
+							"beginCaptures": {
 								"1": {"name": "storage.modifier.fortran.free-form"},
-								"2": {"name": "punctuation.definition.begin.fortran.free-form"},
-								"3": {"name": "storage.modifier.fortran.free-form"},
-								"4": {"name": "punctuation.definition.end.fortran.free-form"}
-							}
+								"2": {"name": "punctuation.definition.begin.fortran.free-form"}
+							},
+							"end": "(\\))|(?=::)|(?=!)|(?=;)|(?=\\n)",
+							"endCaptures": {
+								"0": {"name": "punctuation.definition.end.fortran.free-form"}
+							},
+							"patterns": [
+								{
+									"match": "\\b(?i:(in|out|in\\s*out))\\b",
+									"name": "storage.modifier.fortran.free-form"
+								}
+							]
 						},
 						{ "include": "#continuation" },
 						{ "include": "#comma" }
@@ -463,20 +525,26 @@
 			]
 		},
 		"import-statement": {
-			"begin": "^\\s*(?i:(import))\\s*(::)?",
-			"beginCaptures": {
-				"1": {"name": "keyword.other.fortran.free-form"},
-				"2": {"name": "punctuation.separator.fortran.free-form"}
-			},
-			"end": "(?=!)|(;)|(\\n)",
-			"endCaptures": {
-				"0": {"name": "punctuation.terminator.statement.fortran.free-form"}
-			},
-			"patterns": [
-				{"include": "#comma"},
-				{"include": "#variable"},
-				{"include": "#continuation"}
-			]
+         "name": "meta.import-statement.fortrn.free-form",
+         "begin": "^\\s*(?i:(import))",
+         "beginCaptures": {
+            "1": {"name": "storage.modifier.fortran.free-form"}
+         },
+         "end": "(;)|(?=!)|(\\n)",
+         "endCaptures": {
+            "0": {"name": "punctuation.terminator.fortran.free-form"}
+         },
+         "patterns": [
+            {
+               "name": "punctuation.separator.fortran.free-form",
+               "match": "(::)"
+            },
+            {"include": "#comma"},
+            {"include": "#continuation"},
+            {"include": "#user-defined-operator"},
+            {"include": "#variable"},
+            {"include": "#invalid-construct"}
+         ]
 		},
 		"implicit-statement": {
 			"name": "meta.implicit-statement.fortran.free-form",
@@ -523,7 +591,7 @@
 		"type-declaration-statement": {
 			"name": "meta.type-declaration-statement.fortran.free-form",
 			"begin": "^\\s*(?i:(?=integer|real|complex|character|logical|double|type\\s*\\(|class\\s*\\())",
-			"end": "(?=!)|(;)|(\\n)|(?i:(?=elemental|impure|pure|recursive|subroutine|function))",
+			"end": "(?=!)|(;)|(\\n)|(?i:(?=elemental|impure|pure|recursive|module|subroutine|function))",
 			"endCaptures": {
 				"0": {"name": "punctuation.terminator.statement.fortran.free-form"}
 			},
@@ -563,7 +631,7 @@
 			"patterns": [
 				{
 					"name": "meta.derived-type-statement.fortran.free-form",
-					"begin": "^\\s*(?i:(type))\\b",
+					"begin": "^\\s*(?i:(type))\\s*(?i:(?!is))\\b",
 					"beginCaptures": {
 						"0": {"name": "storage.type.program-unit.fortran.free-form"}
 					},
@@ -633,17 +701,28 @@
 		"interface-specification": {
 			"patterns": [
 				{
-					"match": "(?i:(interface))\\s*([a-zA-Z_][a-zA-Z0-9_]*)?",
-					"captures": {
-						"1": {"name": "storage.type.program-unit.fortran.free-form"},
-						"2": {"name": "entity.name.function.fortran.free-form"}
-					}
+					"name": "meta.interface-statement.fortran.free-form",
+					"begin": "(?i:(interface))",
+					"beginCaptures": {
+						"1": {"name": "storage.type.program-unit.fortran.free-form"}
+					},
+					"end": "(?=!)|(;)|(\\n)",
+					"endCaptures": {
+						"1": {"name": "punctuation.separator.fortran.free-form"}
+					},
+               "patterns": [
+                  {"include": "#user-defined-operator"},
+                  {
+                     "match": "([a-zA-Z_][a-zA-Z0-9_]*)",
+                     "name": "entity.name.function.fortran.free-form"
+                  }
+               ]
 				},
 				{
 					"match": "(?i:(abstract))\\s*(?i:(interface))",
 					"captures": {
 						"1": {"name": "storage.type.program-unit.fortran.free-form"},
-						"2": {"name": "entity.name.function.fortran.free-form"}
+						"2": {"name": "storage.type.program-unit.fortran.free-form"}
 					}
 				},
 				{
@@ -668,12 +747,9 @@
 				},
 				{
 					"name": "meta.subprogram-statement.fortran.free-form",
-					"begin": "\\b(?i:(procedure))\\s*((\\()\\s*([a-zA-Z_][0-9a-zA-Z_]*)\\s*(\\)))?",
+					"begin": "\\b(?i:(final|generic|procedure))",
 					"beginCaptures": {
-						"1": {"name": "storage.type.program-unit.fortran.free-form"},
-						"3": {"name": "punctuation.definition.begin.fortran.free-form"},
-						"4": {"name": "entity.name.function.fortran.free-form"},
-						"5": {"name": "punctuation.definition.end.fortran.free-form"}
+						"0": {"name": "storage.type.fortran.free-form"}
 					},
 					"end": "(?=!)|(;)|(\\n)",
 					"endCaptures": {
@@ -681,29 +757,55 @@
 					},
 					"patterns": [
 						{
+							"match": "(\\()\\s*([a-zA-Z_][0-9a-zA-Z_]*)?\\s*(\\))",
+							"captures": {
+								"1": {"name": "punctuation.definition.begin.fortran.free-form"},
+								"2": {"name": "entity.name.function.fortran.free-form"},
+								"3": {"name": "punctuation.definition.end.fortran.free-form"}
+							}
+						},
+						{
 							"name": "meta.procedure-attribute-specifier-list.fortran.free-form",
 							"begin": "(?=,)|(?=::)",
-							"end": "(::)|(?=!)|(?=;)|(?=\\n)",
-							"endCaptures": {
-								"0": {"name": "punctuation.separator.fortran.free-form"}
-							},
+							"end": "(?=!)|(?=;)|(?=\\n)",
 							"patterns": [
 								{
-									"match": "(,)\\s*(?i:(deferred|nopass|non_overridable|pointer))\\b",
+									"match": "(,)\\s*(?i:(deferred|nopass|non_overridable|pointer|public|private))\\b",
 									"captures": {
 										"1": {"name": "punctuation.separator.fortran.free-form"},
-										"2": {"name": "storage.modifier.program-unit.fortran.free-form"}
+										"2": {"name": "storage.modifier.fortran.free-form"}
 									}
 								},
 								{
 									"match": "(,)\\s*(?i:(pass))\\s*(\\()\\s*(?i:([a-zA-Z_][0-9a-zA-Z_]*))?\\s*(\\))",
 									"captures": {
 										"1": {"name": "punctuation.separator.fortran.free-form"},
-										"2": {"name": "storage.modifier.program-unit.fortran.free-form"},
+										"2": {"name": "storage.modifier.fortran.free-form"},
 										"3": {"name": "punctuation.definition.begin.fortran.free-form"},
 										"4": {"name": "variable.other.fortran.free-form"},
 										"5": {"name": "punctuation.definition.end.fortran.free-form"}
 									}
+								},
+								{
+									"name": "meta.entity-name-list.fortran.free-form",
+									"begin": "(::)",
+									"beginCaptures": {
+										"0": {"name": "punctuation.separator.fortran.free-form"}
+									},
+									"end": "(?=!)|(?=;)|(?=\\n)",
+									"patterns": [
+                              {"include": "#user-defined-operator"},
+										{"include": "#intrinsic-function"},
+										{
+											"name": "entity.name.function.fortran.free-form",
+											"match": "([a-zA-Z_][0-9a-zA-Z_]*)"
+										},
+										{
+											"name": "keyword.operator.association.fortran.free-form",
+											"match": "(=>)"
+										},
+										{"include": "#continuation"}
+									]
 								},
 								{"include": "#continuation"}
 							]
@@ -712,12 +814,15 @@
 							"name": "entity.name.function.fortran.free-form",
 							"match": "([a-zA-Z_][0-9a-zA-Z_]*)"
 						},
-						{"include": "#continuation"}
+						{
+							"name": "keyword.operator.association.fortran.free-form",
+							"match": "(=>)"
+						}
 					]
 				},
 				{
 					"name": "meta.subprogram-statement.fortran.free-form",
-					"begin": "\\b(?i:(?=elemental|impure|module\\s*procedure|pure|recursive|attributes|subroutine|function))\\b",
+					"begin": "\\b(?i:(?=elemental|impure|module\\s*procedure|pure|recursive|module|attributes|subroutine|function))\\b",
 					"end": "(?=;)|(?=!)|(?=\\n)",
 					"endCaptures": {
 						"0": {"name": "punctuation.definition.end.fortran.free-form"}
@@ -725,12 +830,12 @@
 					"patterns": [
 						{
 							"name": "meta.prefix-list.fortran.free-form",
-							"begin": "\\b(?i:(?=elemental|impure|module\\s*procedure|pure|recursive|attributes))\\b",
+							"begin": "\\b(?i:(?=elemental|impure|module\\s*procedure|pure|recursive|module|attributes))\\b",
 							"end": "(\\b(?i:(?=subroutine|function))\\b)|(?=;)|(?=!)|(?=\\n)",
 							"patterns": [
 								{
 									"name": "storage.type.program-unit.fortran.free-form",
-									"match": "\\b(?i:(elemental|impure|module\\s*procedure|pure|recursive))\\b"
+									"match": "\\b(?i:(elemental|impure|module\\s*procedure|pure|recursive|module))\\b"
 								},
 								{
 									"match": "\\b(?i:(attributes))\\s*(\\()\\s*(?i:(global|device))\\s*(\\))",
@@ -845,6 +950,30 @@
 				}
 			]
 		},
+		"submodule": {
+			"patterns": [
+				{
+					"match": "(?i:(submodule))\\s*(\\()\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)?\\s*([a-zA-Z_][a-zA-Z0-9_]*)?\\s*(\\))\\s*([a-zA-Z_][a-zA-Z0-9_]*)",
+					"captures": {
+						"1": {"name": "storage.type.program-unit.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"},
+						"3": {"name": "entity.name.function.fortran.free-form"},
+						"4": {"name": "punctuation.separator.fortran.free-form"},
+						"5": {"name": "entity.name.function.fortran.free-form"},
+						"6": {"name": "punctuation.definition.end.fortran.free-form"},
+						"7": {"name": "entity.name.function.fortran.free-form"}
+					}
+				},
+				{
+					"match": "(?i:(end))\\s*(?i:(submodule))\\s*([a-zA-Z_][a-zA-Z0-9_]*)?",
+					"captures": {
+						"1": {"name": "storage.type.program-unit.fortran.free-form"},
+						"2": {"name": "storage.type.program-unit.fortran.free-form"},
+						"3": {"name": "entity.name.function.fortran.free-form"}
+					}
+				}
+			]
+		},
 		"main-program": {
 			"patterns": [
 				{
@@ -868,7 +997,7 @@
 			"patterns": [
 				{
 					"name": "meta.attribute-specification-statement.fortrn.free-form",
-					"begin": "(?i:(allocatable|dimension|pointer|target))\\s*(::)?",
+					"begin": "^\\s*(?i:(allocatable|dimension|pointer|target))\\s*(::)?",
 					"beginCaptures": {
 						"1": {"name": "storage.modifier.fortran.free-form"},
 						"2": {"name": "punctuation.separator.fortran.free-form"}
@@ -888,20 +1017,25 @@
 				},
 				{
 					"name": "meta.attribute-specification-statement.fortrn.free-form",
-					"begin": "(?i:(asynchronous|contiguous|optional|private|protected|public|value|volatile))\\s*(::)?",
+					"begin": "^\\s*(?i:(asynchronous|contiguous|optional|private|protected|public|value|volatile))",
 					"beginCaptures": {
 						"1": {"name": "storage.modifier.fortran.free-form"},
 						"2": {"name": "punctuation.separator.fortran.free-form"}
 					},
-					"end": "(;)|(?=!)|(?<=\\n)",
+					"end": "(;)|(?=!)|(\\n)",
 					"endCaptures": {
 						"0": {"name": "punctuation.terminator.fortran.free-form"}
 					},
 					"patterns": [
+                  {
+                     "name": "punctuation.separator.fortran.free-form",
+                     "match": "(::)"
+                  },
 						{"include": "#comma"},
-						{"include": "#variable"},
 						{"include": "#continuation"},
-						{"include": "#invalid-construct"}
+                  {"include": "#user-defined-operator"},
+						{"include": "#variable"},
+                  {"include": "#invalid-construct"}
 					]
 				},
 				{
@@ -946,7 +1080,7 @@
 				},
 				{
 					"name": "meta.attribute-specification-statement.fortrn.free-form",
-					"begin": "(?i:(data))",
+					"begin": "^\\s*(?i:(data))\\b",
 					"beginCaptures": {
 						"0": {"name": "storage.modifier.fortran.free-form"}
 					},
@@ -1000,7 +1134,7 @@
 				},
 				{
 					"name": "meta.attribute-specification-statement.fortrn.free-form",
-					"begin": "(?i:(save))\\s*(::)?",
+					"begin": "(?i:(save))\\b\\s*(::)?",
 					"beginCaptures": {
 						"1": {"name": "storage.modifier.fortran.free-form"},
 						"2": {"name": "punctuation.separator.fortran.free-form"}
@@ -1135,7 +1269,7 @@
 				},
 				{
 					"name": "meta.intrinsic-function.fortran.free-form",
-					"begin": "\\b(?i:(merge|pack|spread|unpack|allocated|is_contiguous|lbound|shape|size|ubound|maxloc|minloc|cshift|eoshift|reshape|transpose|all|any|count|iall|iany|iparity|maxval|minval|norm2|parity|product|sum))\\s*(\\()",
+					"begin": "(?<!%)\\b(?i:(rank|merge|pack|spread|unpack|allocated|is_contiguous|lbound|shape|size|ubound|maxloc|minloc|findloc|cshift|eoshift|reshape|transpose|all|any|count|iall|iany|iparity|maxval|minval|norm2|parity|product|sum))\\s*(\\()",
 					"beginCaptures": {
 						"1": {"name": "support.function.array.fortran.free-form"},
 						"2": {"name": "punctuation.definition.begin.fortran.free-form"}
@@ -1194,6 +1328,21 @@
 					]
 				},
 				{
+					"name": "meta.intrinsic-function.fortran.free-form",
+					"begin": "\\b(?i:(c_associated|c_f_pointer|c_funloc|c_loc|c_sizeof))\\s*(\\()",
+					"beginCaptures": {
+						"1": {"name": "support.function.c-binding.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"}
+					},
+					"end": "(\\))|(?=;)|(?=!)|(?=\\n)",
+					"endCaptures": {
+						"0": {"name": "punctuation.definition.end.fortran.free-form"}
+					},
+					"patterns": [
+						{"include": "#expression"}
+					]
+				},
+				{
 					"name": "meta.intrinsic-subroutine.fortran.free-form",
 					"begin": "\\b(?i:(atomic_define|atomic_ref|cpu_time|date_and_time|execute_command_line|get_command|get_command_argument|get_environment_variable|move_alloc|mvbits|random_number|random_seed|system_clock))\\s*(\\()",
 					"beginCaptures": {
@@ -1216,7 +1365,7 @@
 					"match": "\\b(?i:(blockDim|blockIdx|threadIdx))\\s*(%)\\s*(?i:(x|y|z))\\b",
 					"captures": {
 						"1": {"name": "support.variable.cuda-fortran"},
-						"2": {"name": "punctuation.definition.begin.fortran.free-form"},
+						"2": {"name": "keyword.operator.access.fortran.free-form"},
 						"3": {"name": "support.variable.cuda-fortran"}
 					}
 				}
@@ -1243,6 +1392,11 @@
 								"2": {"name": "keyword.operator.fortran.free-form"}
 							}
 						},
+						{
+							"name": "punctuation.separator.fortran.free-form",
+							"match": "(::)"
+						},
+						{"include": "#declaration-type-specifier"},
 						{"include": "#expression"},
 						{"include": "#continuation"}
 					]
@@ -1271,6 +1425,186 @@
 					]
 				},
 				{
+					"name": "meta.nullify-statement.fortran.free-form",
+					"begin": "\\b(?i:(nullify))\\s*(\\()",
+					"beginCaptures": {
+						"1": {"name": "keyword.control.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"}
+					},
+					"end": "(\\))|(?=;)|(?=!)|(?=\\n)",
+					"endCaptures": {
+						"0": {"name": "punctuation.definition.end.fortran.free-form"}
+					},
+					"patterns": [
+						{"include": "#variable"},
+						{"include": "#continuation"}
+					]
+				},
+				{
+					"name": "meta.inquire-statement.fortran.free-form",
+					"begin": "(?<=;|^)\\s*(?i:(inquire))\\s*(\\()",
+					"beginCaptures": {
+						"1": {"name": "keyword.control.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"}
+					},
+					"end": "(\\))|(?=;)|(?=!)|(?=\\n)",
+					"endCaptures": {
+						"0": {"name": "punctuation.definition.end.fortran.free-form"}
+					},
+					"patterns": [
+						{
+                     "match": "(?i:(file|err|id|iomsg|size|iostat|defaultfile|unit|directory|exist|dirspec|iolength|access|delim|nextrec|recl|action|direct|number|recordtype|asynchronous|encoding|opened|round|binary|exist|organization|sequential|blank|form|pad|share|blocksize|formatted|pending|sign|buffered|iofocus|pos|size|carriagecontrol|mode|position|unformatted|convert|name|read|write|decimal|named|readwrite))\\s*(=)",
+							"captures": {
+								"1": {"name": "keyword.control.fortran.free-form"},
+								"2": {"name": "keyword.operator.fortran.free-form"}
+							}
+						},
+						{"include": "#expression"},
+						{"include": "#continuation"}
+					]
+				},
+				{
+					"name": "meta.open-statement.fortran.free-form",
+					"begin": "(?<=;|^)\\s*(?i:(open))\\s*(\\()",
+					"beginCaptures": {
+						"1": {"name": "keyword.control.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"}
+					},
+					"end": "(\\))|(?=;)|(?=!)|(?=\\n)",
+					"endCaptures": {
+						"0": {"name": "punctuation.definition.end.fortran.free-form"}
+					},
+					"patterns": [
+						{
+							"match": "(?i:(unit|file|err|iomsg|iostat|access|decimal|name|round|action|defaultfile|newunit|share|associatevariable|delim|noshared|shared|asynchronous|dispose|organization|sign|blank|encoding|pad|status|blocksize|file|position|title|buffercount|form|readonly|type|buffered|iofocus|recl|useropen|carriagecontrol|maxrec|recordsize|convert|mode|recordtype))\\s*(=)",
+							"captures": {
+								"1": {"name": "keyword.control.fortran.free-form"},
+								"2": {"name": "keyword.operator.fortran.free-form"}
+							}
+						},
+						{"include": "#expression"},
+						{"include": "#continuation"}
+					]
+				},
+				{
+					"name": "meta.read-write-statement.fortran.free-form",
+					"begin": "(?<=;|^)\\s*(?i:(read|write))\\s*(\\()",
+					"beginCaptures": {
+						"1": {"name": "keyword.control.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"}
+					},
+					"end": "(\\))|(?=;)|(?=!)|(?=\\n)",
+					"endCaptures": {
+						"0": {"name": "punctuation.definition.end.fortran.free-form"}
+					},
+					"patterns": [
+						{
+							"match": "(?i:(unit|fmt|advance|asynchronous|decimal|delim|id|pos|round|sign|iostat|err|iomsg|nml|rec|end))\\s*(=)",
+							"captures": {
+								"1": {"name": "keyword.control.fortran.free-form"},
+								"2": {"name": "keyword.operator.fortran.free-form"}
+							}
+						},
+						{"include": "#expression"},
+						{"include": "#continuation"}
+					]
+				},
+				{
+					"name": "meta.close-statement.fortran.free-form",
+					"begin": "(?<=;|^)\\s*(?i:(close))\\s*(\\()",
+					"beginCaptures": {
+						"1": {"name": "keyword.control.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"}
+					},
+					"end": "(\\))|(?=;)|(?=!)|(?=\\n)",
+					"endCaptures": {
+						"0": {"name": "punctuation.definition.end.fortran.free-form"}
+					},
+					"patterns": [
+						{
+							"match": "(?i:(unit|status|dispose|disp|err|iomsg|iostat))\\s*(=)",
+							"captures": {
+								"1": {"name": "keyword.control.fortran.free-form"},
+								"2": {"name": "keyword.operator.fortran.free-form"}
+							}
+						},
+						{"include": "#expression"},
+						{"include": "#continuation"}
+					]
+				},
+				{
+					"name": "meta.associate-statement.fortran.free-form",
+					"begin": "\\b(?i:(associate))\\s*(\\()",
+					"beginCaptures": {
+						"1": {"name": "keyword.control.fortran.free-form"},
+						"2": {"name": "punctuation.definition.begin.fortran.free-form"}
+					},
+					"end": "(\\))|(?=;)|(?=!)|(?=\\n)",
+					"endCaptures": {
+						"0": {"name": "punctuation.definition.end.fortran.free-form"}
+					},
+					"patterns": [
+						{"include": "#expression"},
+						{"include": "#comma"},
+						{"include": "#continuation"}
+					]
+				},
+				{
+					"name": "meta.select-type-construct.fortran.free-form",
+					"begin": "(?i:(select))\\s*(?i:(type))",
+					"beginCaptures": {
+						"1": {"name": "keyword.control.fortran.free-form"},
+						"2": {"name": "keyword.control.fortran.free-form"}
+					},
+					"end": "\\b(?i:(end))\\s*(?i:(select))\\b",
+					"endCaptures": {
+						"1": {"name": "keyword.control.fortran.free-form"},
+						"2": {"name": "keyword.control.fortran.free-form"}
+					},
+					"patterns": [
+                  {
+                     "name": "meta.type-is-statement.fortran.free-form",
+                     "begin": "(?i:(type))\\s*(?i:(is))\\s*(\\()",
+                     "beginCaptures": {
+                        "1": {"name": "keyword.control.fortran.free-form"},
+                        "2": {"name": "keyword.control.fortran.free-form"},
+                        "3": {"name": "punctuation.definition.begin.fortran.free-form"}
+                     },
+                     "end": "(\\))",
+                     "endCaptures": {
+                        "1": {"name": "punctuation.definition.begin.fortran.free-form"}
+                     },
+                     "patterns": [
+                        {"include": "#declaration-type-specifier"}
+                     ]
+                  },
+                  {
+                     "match": "(?i:(class))\\s*(?i:(is))\\s*(\\()\\s*([a-zA-Z_][0-9a-zA-Z_]*)\\s*(\\))",
+                     "captures": {
+                        "1": {"name": "keyword.control.fortran.free-form"},
+                        "2": {"name": "keyword.control.fortran.free-form"},
+                        "3": {"name": "punctuation.definition.begin.fortran.free-form"},
+                        "4": {"name": "entity.name.type.class.fortran.free-form"},
+                        "5": {"name": "punctuation.definition.end.fortran.free-form"}
+                     }
+                  },
+                  {
+                     "match": "(?i:(class))\\s*(?i:(default))",
+                     "captures": {
+                        "1": {"name": "keyword.control.fortran.free-form"},
+                        "2": {"name": "keyword.control.fortran.free-form"}
+                     }
+                  },
+						{"include": "#comment"},
+                  {"include": "#executable-statement"},
+                  {"include": "#expression"}
+					]
+				},
+				{
+					"name": "keyword.control.fortran.free-form",
+					"match": "\\b(?i:(end))\\s*(?i:(associate))\\b"
+				},
+				{
 					"name": "meta.kernel-execution-configuration.cuda-fortran",
 					"begin": "(<<<)",
 					"beginCaptures": {
@@ -1294,15 +1628,23 @@
 				},
 				{
 					"name": "keyword.control.fortran.free-form",
-					"match": "\\b(?i:(if|then|else\\s*(if)?|end\\s*if|do|exit|cycle|end\\s*do|go\\s*to|call|continue|return|stop))\\b"
+					"match": "\\b(?i:(if|then|else\\s*(if)?|end\\s*if|do\\s*while|do\\s*concurrent|do|exit|cycle|end\\s*do|go\\s*to|call|continue|return|error\\s*stop|stop))\\b"
 				},
 				{
 					"name": "keyword.control.fortran.free-form",
-					"match": "\\b(?i:(select\\s*case|case|end\\s*select))\\b"
+					"match": "\\b(?i:(select\\s*case|case\\s*default|case|end\\s*select))\\b"
 				},
 				{
 					"name": "keyword.control.fortran.free-form",
-					"match": "\\b(?i:(read|write|print|flush))\\b"
+					"match": "\\b(?i:(forall|end\\s*forall|where|else\\s*where|end\\s*where))\\b"
+				},
+				{
+					"name": "keyword.control.fortran.free-form",
+					"match": "\\b(?i:(print|flush))\\b"
+				},
+				{
+					"name": "keyword.control.fortran.free-form",
+					"match": "\\b(?i:(block|end\\s*block))\\b"
 				},
 				{
 					"name": "storage.type.program-unit.fortran.free-form",
